@@ -24,6 +24,10 @@ import {
   Logout,
   Timeline as RealTimeIcon,
   LocationOn as LocationIcon,
+  Psychology as AIIcon,
+  Group as CollabIcon,
+  Shield as GeofenceIcon,
+  Gavel as EvidenceIcon,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -44,6 +48,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
     { text: 'Real-Time Prediction', icon: <RealTimeIcon />, path: '/realtime' },
     { text: 'Location Monitoring', icon: <LocationIcon />, path: '/location' },
+    { text: 'AI Threat Intelligence', icon: <AIIcon />, path: '/ai-intelligence' },
+    { text: 'Predictive Geofencing', icon: <GeofenceIcon />, path: '/geofencing' },
+    { text: 'Collaborative Ops', icon: <CollabIcon />, path: '/collaborative' },
+    { text: 'Evidence Package', icon: <EvidenceIcon />, path: '/evidence' },
     { text: 'Analytics', icon: <AnalyticsIcon />, path: '/analytics' },
     { text: 'Alerts', icon: <AlertIcon />, path: '/alerts' },
   ];

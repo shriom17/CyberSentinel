@@ -8,6 +8,10 @@ import Analytics from './pages/Analytics';
 import Alerts from './pages/Alerts';
 import RealTimeDashboard from './pages/RealTimeDashboard';
 import RealTimeLocationMonitor from './components/RealTimeLocationMonitor';
+import AIThreatIntelligence from './components/AIThreatIntelligence';
+import CollaborativeOps from './components/CollaborativeOps';
+import PredictiveGeofencing from './components/PredictiveGeofencing';
+import EvidencePackageGenerator from './components/EvidencePackageGenerator';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import Layout from './components/Layout';
 import './App.css';
@@ -51,6 +55,10 @@ function App() {
                       <Route path="/dashboard" element={<Dashboard />} />
                       <Route path="/realtime" element={<RealTimeDashboard />} />
                       <Route path="/location" element={<RealTimeLocationMonitor />} />
+                      <Route path="/ai-intelligence" element={<AIThreatIntelligence />} />
+                      <Route path="/geofencing" element={<PredictiveGeofencing />} />
+                      <Route path="/collaborative" element={<CollaborativeOps />} />
+                      <Route path="/evidence" element={<EvidencePackageGenerator />} />
                       <Route path="/analytics" element={<Analytics />} />
                       <Route path="/alerts" element={<Alerts />} />
                     </Routes>

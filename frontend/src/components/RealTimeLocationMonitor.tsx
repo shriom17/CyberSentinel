@@ -45,6 +45,8 @@ import {
 import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import { LatLngExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import DemoEventGenerator from './DemoEventGenerator';
+import ExplainableAlertCard from './ExplainableAlertCard';
 
 interface LocationData {
   user_id: string;
@@ -97,6 +99,7 @@ const RealTimeLocationMonitor: React.FC = () => {
   const [hotspots, setHotspots] = useState<HotspotData[]>([]);
   const [selectedAlert, setSelectedAlert] = useState<LocationAlert | null>(null);
   const [alertDialogOpen, setAlertDialogOpen] = useState(false);
+  const [demoCenter, setDemoCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [trackingStats, setTrackingStats] = useState({
     active_users: 0,
     total_locations_tracked: 0,
@@ -125,6 +128,14 @@ const RealTimeLocationMonitor: React.FC = () => {
       );
     }
   }, [isTracking]);
+
+  // Handle simulated alerts from demo generator
+  const handleSimulatedAlert = (simAlert: any) => {
+    // prepend and show toast-like notification
+    setLocationAlerts(prev => [simAlert, ...prev]);
+    setSelectedAlert(simAlert as any);
+    setAlertDialogOpen(true);
+  };
 
   // Start/stop location tracking
   const toggleLocationTracking = () => {
@@ -341,6 +352,18 @@ const RealTimeLocationMonitor: React.FC = () => {
         🌍 Real-Time Location Monitoring
       </Typography>
 
+      {/* Demo event generator + explainability */}
+      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box>
+          <DemoEventGenerator onNewAlert={handleSimulatedAlert} center={demoCenter} />
+        </Box>
+        <Box>
+          <Button size="small" variant="outlined" onClick={() => setDemoCenter(currentLocation ? { lat: currentLocation.coords.latitude, lng: currentLocation.coords.longitude } : null)}>
+            Use my location for demo
+          </Button>
+        </Box>
+      </Box>
+
       {/* Status Cards */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
@@ -482,7 +505,7 @@ const RealTimeLocationMonitor: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {locationAlerts.slice(0, 10).map((alert) => (
+                    {locationAlerts.slice(0, 10).map((alert) => (
                     <TableRow
                       key={alert.alert_id}
                       sx={{ cursor: 'pointer' }}
@@ -528,6 +551,11 @@ const RealTimeLocationMonitor: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Explainability card for selected alert (also used for simulated alerts) */}
+      {selectedAlert && (
+        <ExplainableAlertCard alert={selectedAlert} onInvestigate={(id) => { window.alert(`Investigate: ${id}`); }} />
+      )}
 
       {/* Geofences and Hotspots */}
       <Grid container spacing={3}>

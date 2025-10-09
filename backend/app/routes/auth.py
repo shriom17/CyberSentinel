@@ -137,6 +137,64 @@ def refresh_token():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@auth_bp.route('/google', methods=['POST'])
+def google_login():
+    """Google OAuth authentication"""
+    try:
+        data = request.get_json()
+        credential = data.get('credential')
+        
+        if not credential:
+            return jsonify({'success': False, 'error': 'Google credential required'}), 400
+        
+        # In production, verify the Google token with Google's API
+        # For demo purposes, we'll simulate the authentication
+        try:
+            # Decode the credential (JWT from Google)
+            # In production: use google.oauth2 library to verify
+            # from google.oauth2 import id_token
+            # from google.auth.transport import requests
+            # idinfo = id_token.verify_oauth2_token(credential, requests.Request(), GOOGLE_CLIENT_ID)
+            
+            # For demo: create a user based on Google auth
+            demo_user = {
+                'id': 999,
+                'username': 'google_user',
+                'email': 'user@gmail.com',
+                'role': 'analyst',
+                'permissions': ['view_analytics', 'view_alerts'],
+                'department': 'I4C',
+                'auth_provider': 'google'
+            }
+            
+            # Generate JWT token
+            token_payload = {
+                'user_id': demo_user['id'],
+                'username': demo_user['username'],
+                'email': demo_user['email'],
+                'role': demo_user['role'],
+                'auth_provider': 'google',
+                'exp': datetime.utcnow() + timedelta(hours=24)
+            }
+            
+            token = jwt.encode(token_payload, Config.JWT_SECRET_KEY, algorithm='HS256')
+            
+            return jsonify({
+                'success': True,
+                'token': token,
+                'user': demo_user,
+                'message': 'Google authentication successful'
+            })
+            
+        except Exception as verify_error:
+            return jsonify({
+                'success': False,
+                'error': f'Failed to verify Google token: {str(verify_error)}'
+            }), 401
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     """User logout"""

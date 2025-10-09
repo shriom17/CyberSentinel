@@ -8,8 +8,9 @@ import {
   Box,
   Alert,
   CircularProgress,
+  Divider,
 } from '@mui/material';
-import { Security as SecurityIcon } from '@mui/icons-material';
+import { Security as SecurityIcon, Google as GoogleIcon } from '@mui/icons-material';
 import { useAuth } from '../services/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,7 +19,8 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,6 +42,71 @@ const Login: React.FC = () => {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setError('');
+    setGoogleLoading(true);
+
+    try {
+      // Initialize Google OAuth
+      if (typeof window !== 'undefined' && (window as any).google) {
+        (window as any).google.accounts.id.initialize({
+          client_id: process.env.REACT_APP_GOOGLE_CLIENT_ID || '1234567890-abcdefg.apps.googleusercontent.com',
+          callback: handleGoogleCallback,
+        });
+
+        (window as any).google.accounts.id.prompt(); // Show One Tap dialog
+      } else {
+        // Fallback: simulate Google login for demo
+        await simulateGoogleLogin();
+      }
+    } catch (err) {
+      console.error('Google login error:', err);
+      setError('Google login failed. Please try again.');
+      setGoogleLoading(false);
+    }
+  };
+
+  const handleGoogleCallback = async (response: any) => {
+    try {
+      // Send the Google token to backend
+      const backendResponse = await fetch('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ credential: response.credential }),
+      });
+
+      const data = await backendResponse.json();
+      
+      if (data.success && data.token) {
+        localStorage.setItem('token', data.token);
+        navigate('/dashboard');
+      } else {
+        setError('Google authentication failed');
+      }
+    } catch (err) {
+      console.error('Google callback error:', err);
+      setError('Google authentication failed');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  const simulateGoogleLogin = async () => {
+    // Demo mode: simulate Google login
+    return new Promise<void>((resolve) => {
+      setTimeout(async () => {
+        const success = await login('admin', 'admin123'); // Auto-login as admin
+        if (success) {
+          navigate('/dashboard');
+        } else {
+          setError('Demo Google login failed');
+        }
+        setGoogleLoading(false);
+        resolve();
+      }, 1500);
+    });
+  };
+
   return (
     <Container component="main" maxWidth="sm">
       <Box
@@ -54,7 +121,7 @@ const Login: React.FC = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <SecurityIcon sx={{ fontSize: 40, color: 'primary.main', mb: 2 }} />
             <Typography component="h1" variant="h4" gutterBottom>
-              Cybercrime Analytics
+             CyberSentinel
             </Typography>
             <Typography variant="h6" color="textSecondary" gutterBottom>
               Predictive Intelligence Platform
@@ -101,25 +168,35 @@ const Login: React.FC = () => {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              disabled={loading}
+              disabled={loading || googleLoading}
             >
               {loading ? <CircularProgress size={24} /> : 'Sign In'}
             </Button>
 
-            <Box sx={{ mt: 2 }}>
+            <Divider sx={{ my: 2 }}>
               <Typography variant="body2" color="textSecondary">
-                Demo Credentials:
+                OR
               </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Admin: admin / admin123
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Officer: officer1 / officer123
-              </Typography>
-              <Typography variant="body2" color="textSecondary">
-                Analyst: analyst1 / analyst123
-              </Typography>
-            </Box>
+            </Divider>
+
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={googleLoading ? <CircularProgress size={20} /> : <GoogleIcon />}
+              onClick={handleGoogleLogin}
+              disabled={loading || googleLoading}
+              sx={{
+                mb: 2,
+                borderColor: '#4285f4',
+                color: '#4285f4',
+                '&:hover': {
+                  borderColor: '#357ae8',
+                  backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                },
+              }}
+            >
+              {googleLoading ? 'Signing in...' : 'Sign in with Google'}
+            </Button>
           </Box>
         </Paper>
       </Box>
